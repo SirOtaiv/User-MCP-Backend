@@ -1,0 +1,7 @@
+fastapi
+uvicorn[standard]
+pydantic
+pydantic_settings
+python-dotenv
+google-genai
+mcp[cli]
