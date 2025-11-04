@@ -84,7 +84,30 @@ async def create_prompt(prompt: str):
                await session.initialize()
                
                tool_result = await session.call_tool(fn.name, fn.args)
-               # Retorna o resultado da execução da tool
-               return tool_result.content[0].text
 
-   return response.text
+      tool_output = tool_result.content[0].text
+
+      contents_for_phase_2 = [
+         types.Content(role="user", parts=[types.Part(text=full_prompt)]),
+         types.Content(
+            role="model",
+            parts=[types.Part(function_call=fn)]
+         ),
+         types.Content(
+            role="function",
+            parts=[types.Part.from_function_response(
+               name=fn.name,
+               response={"result": tool_output},
+            )]
+         )
+      ]
+
+      second_response = client.models.generate_content(
+         model=settings.gemini_model,
+         contents=contents_for_phase_2,
+         config=types.GenerateContentConfig(temperature=0)
+      )
+
+      final_response_text = second_response.text
+
+   return final_response_text
