@@ -1,4 +1,5 @@
 import json
+import re
 from json import JSONDecodeError
 from fastapi import APIRouter, HTTPException, status
 from pydantic import BaseModel
@@ -24,7 +25,14 @@ async def handle_prompt(request: PromptRequest):
       )
    
    try:
-      data = json.loads(prompt_response_str)
+      match = re.search(r"```(?:json)?\s*([\s\S]*?)```", prompt_response_str)
+
+      if match:
+         json_string = match.group(1).strip()
+      else:
+         json_string = prompt_response_str.strip()
+
+      data = json.loads(json_string)
 
       # Verifica se o que veio é realmente uma lista
       if not isinstance(data, list):
@@ -32,13 +40,21 @@ async def handle_prompt(request: PromptRequest):
                status_code=500,
                detail=f"A resposta do modelo foi um JSON, mas não uma lista: {prompt_response_str}"
          )
+      
       return ListResponse(
          count=len(data),
-         rows=data
+         rows=data   
       )
 
    except JSONDecodeError:
+      # Se falhou após a limpeza, a resposta ainda não é um JSON válido
       raise HTTPException(
          status_code=500,
          detail=f"A resposta do modelo não foi um JSON válido: {prompt_response_str}"
+      )
+   except Exception as e:
+      # Captura outros erros de processamento
+      raise HTTPException(
+         status_code=500,
+         detail=f"Erro desconhecido ao processar a resposta do modelo: {e}. Resposta bruta: {prompt_response_str}"
       )

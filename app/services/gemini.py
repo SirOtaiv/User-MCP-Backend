@@ -59,6 +59,7 @@ async def create_prompt(prompt: str):
    ## REGRAS DE SAÍDA:
    * Para cada candidato, atribua uma pontuação de 0 a 10 e explique o motivo da nota, baseando-se *apenas* nas informações encontradas pela ferramenta.
    * Responda **APENAS** em JSON, formatado como a LISTA de 5 objetos solicitada.
+   * Os campos do json de cada item da lista tem os seguintes campos: name (Nome da pessoa apenas), url (Link do perfil), title, score e reason
    """
 
    response = client.models.generate_content(
