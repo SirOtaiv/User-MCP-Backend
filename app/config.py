@@ -11,6 +11,7 @@ class Settings(BaseSettings):
 
     # MCP Server
     mcp_server_url: str
+    mcp_server_profile: str
     mcp_server_api_key: str
 
     class Config:
