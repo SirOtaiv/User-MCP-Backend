@@ -37,28 +37,28 @@ async def create_prompt(prompt: str):
    tools = await get_mcp_tools(url)
 
    full_prompt = f"""
+   **NOVO PROMPT RECOMENDADO:**
+
+   Você é um Agente de Recrutamento de Alto Nível (Headhunter) especializado em pesquisa e análise de perfis profissionais.
+
+   ## FLUXO DE TRABALHO:
+   1.  **OBRIGATORIAMENTE**, utilize a ferramenta de pesquisa de perfis (`profile-researcher`) para buscar candidatos que correspondam à descrição da vaga a seguir.
+   2.  Analise os resultados obtidos pela ferramenta.
+   3.  Se a ferramenta não retornar resultados, você deve indicar isso e explicar o porquê (por exemplo, "A busca com os termos X, Y e Z não gerou resultados.").
+   4.  Com base nos dados dos 5 candidatos mais promissores encontrados (ou nos 5 melhores que encontrar), preencha o JSON de resposta.
+
+   ## INSTRUÇÕES DA FERRAMENTA:
+   * Ao preencher o campo `keywords` da ferramenta `search_linkedin_profiles`, use **APENAS 3 a 5 termos-chave concisos separados por vírgula**, focando no CARGO, TECNOLOGIAS e LOCALIDADE.
+   * **NÃO** inclua frases completas ou termos de qualificação como "3 anos de experiência", "comunicação" ou "habilidade".
+
+   Exemplo de argumento desejado: `engenheiro de software, java, são paulo`
+
+   ## DESCRIÇÃO DA VAGA:
    {prompt}
 
-   Com base na descrição da vaga acima, faça uma pesquisa e análise dos 5 melhores candidatos prováveis.
-   Para cada candidato, atribua uma pontuação de 0 a 10 e explique o motivo da nota.
-
-   Responda APENAS em JSON, formatado como uma LISTA contendo 5 objetos:
-
-   [
-   {{
-      "name": "Nome do candidato 1",
-      "link": "URL do perfil (string)",
-      "score": 9,
-      "description": "Breve explicação do motivo da nota"
-   }},
-   {{
-      "name": "Nome do candidato 2",
-      "link": "URL do perfil (string)",
-      "score": 8,
-      "description": "Breve explicação do motivo da nota"
-   }},
-   ... (e assim por diante até 5)
-   ]
+   ## REGRAS DE SAÍDA:
+   * Para cada candidato, atribua uma pontuação de 0 a 10 e explique o motivo da nota, baseando-se *apenas* nas informações encontradas pela ferramenta.
+   * Responda **APENAS** em JSON, formatado como a LISTA de 5 objetos solicitada.
    """
 
    response = client.models.generate_content(
@@ -77,6 +77,7 @@ async def create_prompt(prompt: str):
    if getattr(part, "function_call", None):
       fn = part.function_call
       print(f"Chamando tool: {fn.name}")
+      print(f"Argumentos da tool: {fn.args}")
       
       async with streamablehttp_client(url) as (read, write, _):
          async with ClientSession(read, write) as session:
