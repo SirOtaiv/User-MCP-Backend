@@ -8,7 +8,7 @@ from app.schemas.communs import ListResponse
 from app.services.gemini import create_prompt
 from app.schemas.gemini import PromptResponse
 class PromptRequest(BaseModel):
-    prompt: str
+   prompt: str
 
 router = APIRouter()
 
